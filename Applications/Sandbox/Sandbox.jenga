@@ -51,6 +51,7 @@ def configure_sandbox_app(project_name: str, source_file: str, app_id_suffix: st
 
         includedirs([
             "src",
+            "include",
             "%{wks.location}/Externals",
             "%{NKWindow.location}/src",
             "%{NKRenderer.location}/src",

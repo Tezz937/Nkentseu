@@ -1,5 +1,6 @@
 #pragma once 
 #include "Vec4d.h" 
+#include "Mat3d.h" 
 #include <array> 
  
 namespace NkMath { 
@@ -64,6 +65,32 @@ namespace NkMath {
         void ToFloat(float out[16]) const { 
             for(int i=0; i<16; i++) out[i] = (float)data[i]; 
         } 
+
+        
+        // Matrice de rotation — formule de Rodrigues 
+        // La rotation d'angle θ autour d'un axe unitaire n = (nx, ny, nz) est donnée par la formule de Rodrigues : 
+        static Mat4d RotateAxis(const Vec3d& axis, double angleRad) { 
+            Vec3d n = axis.Normalized(); 
+            double c = std::cos(angleRad); 
+            double s = std::sin(angleRad); 
+            double t = 1.0 - c; 
+        
+            Mat4d R = Mat4d::Identity(); 
+            // Formule de Rodrigues 
+            R(0,0) = t*n.x*n.x + c; 
+            R(0,1) = t*n.x*n.y - s*n.z; 
+            R(0,2) = t*n.x*n.z + s*n.y; 
+        
+            R(1,0) = t*n.x*n.y + s*n.z; 
+            R(1,1) = t*n.y*n.y + c; 
+            R(1,2) = t*n.y*n.z - s*n.x; 
+        
+            R(2,0) = t*n.x*n.z - s*n.y; 
+            R(2,1) = t*n.y*n.z + s*n.x; 
+            R(2,2) = t*n.z*n.z + c; 
+        
+            return R; 
+        } 
     }; 
 
     // Inverse par Gauss-Jordan avec pivot partiel 
@@ -119,31 +146,6 @@ namespace NkMath {
                     return false;
         return true;
     }
-
-    // 3.3 Matrice de rotation — formule de Rodrigues 
-    // La rotation d'angle θ autour d'un axe unitaire n = (nx, ny, nz) est donnée par la formule de Rodrigues : 
-    Mat4d RotateAxis(const Vec3d& axis, double angleRad) { 
-        Vec3d n = axis.Normalized(); 
-        double c = std::cos(angleRad); 
-        double s = std::sin(angleRad); 
-        double t = 1.0 - c; 
-    
-        Mat4d R = Mat4d::Identity(); 
-        // Formule de Rodrigues 
-        R(0,0) = t*n.x*n.x + c; 
-        R(0,1) = t*n.x*n.y - s*n.z; 
-        R(0,2) = t*n.x*n.z + s*n.y; 
-    
-        R(1,0) = t*n.x*n.y + s*n.z; 
-        R(1,1) = t*n.y*n.y + c; 
-        R(1,2) = t*n.y*n.z - s*n.x; 
-    
-        R(2,0) = t*n.x*n.z - s*n.y; 
-        R(2,1) = t*n.y*n.z + s*n.x; 
-        R(2,2) = t*n.z*n.z + c; 
-    
-        return R; 
-    } 
     
     // LookAt — matrice View 
     // Construire la matrice View (caméra regarde target depuis eye) 
@@ -181,14 +183,14 @@ namespace NkMath {
     }
     
     // Construire Mat4d depuis [R3×3 | t3×1] de solvePnP
-    // Mat4d FromRT(const Mat3d& R, const Vec3d& t) { 
-    //     Mat4d M = Mat4d::Identity(); 
-    //     for(int r=0; r<3; r++) 
-    //         for(int c=0; c<3; c++) 
-    //             M(r,c) = R(r,c); 
-    //     M(0,3) = t.x; M(1,3) = t.y; M(2,3) = t.z; 
-    //     return M; 
-    // } 
+    Mat4d FromRT(const Mat3d& R, const Vec3d& t) { 
+        Mat4d M = Mat4d::Identity(); 
+        for(int r=0; r<3; r++) 
+            for(int c=0; c<3; c++) 
+                M(r,c) = R(r,c); 
+        M(0,3) = t.x; M(1,3) = t.y; M(2,3) = t.z; 
+        return M; 
+    } 
 
     // TRS — Translation, Rotation, Scale 
     Mat4d Translate(const Vec3d& t) { 
@@ -208,11 +210,11 @@ namespace NkMath {
     // 2. Tourner l'objet mis à l'échelle 
     // 3. Translater vers la position monde 
     Mat4d TRS(const Vec3d& t, const Vec3d& axis, double angle, const Vec3d& s) { 
-        return Translate(t) * RotateAxis(axis, angle) * Scale(s); 
+        return Translate(t) * Mat4d::RotateAxis(axis, angle) * Scale(s); 
     } 
 
     Mat4d TRS(const Vec3d& t, const Vec3d& r, const Vec3d& s){
-        Mat4d rotation = RotateAxis({0, 0, 1}, r.z) * RotateAxis({0, 1, 0}, r.y) * RotateAxis({1, 0, 0}, r.x);
+        Mat4d rotation = Mat4d::RotateAxis({0, 0, 1}, r.z) * Mat4d::RotateAxis({0, 1, 0}, r.y) * Mat4d::RotateAxis({1, 0, 0}, r.x);
         return Translate(t) * rotation * Scale(s);
     }
 
