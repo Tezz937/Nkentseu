@@ -11,8 +11,11 @@ namespace NkMath {
     
         // Constructeurs 
         Vec3d() : x(0.0), y(0.0), z(0.0) {} 
+
         Vec3d(double x, double y, double z) : x(x), y(y), z(z) {} 
+        
         Vec3d(const Vec2d& v, double z) : x(v.x), y(v.y), z(z) {} 
+        
         explicit Vec3d(double s) : x(s), y(s), z(s) {}  // fill constructor 
     
         // Accès par index — & pour permettre l'écriture 

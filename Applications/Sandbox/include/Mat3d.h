@@ -36,7 +36,47 @@ namespace NkMath {
                     result(row, col) = sum; 
                 } 
             return result; 
-        } 
+        }
+
+        // Soustraction entre deux Mat3d
+        Mat3d operator-(const Mat3d& o) const {
+            Mat3d result;
+            for(int i = 0; i < 9; i++)
+                result.data[i] = this->data[i] - o.data[i];
+            return result;
+        }
+
+        // Obtenir une colonne comme Vec3d
+        Vec3d col(int c) const {
+            return { (*this)(0, c), (*this)(1, c), (*this)(2, c) };
+        }
+
+        // Modifier une colonne à partir d'un Vec3d
+        void setCol(int c, const Vec3d& v) {
+            (*this)(0, c) = v.x;
+            (*this)(1, c) = v.y;
+            (*this)(2, c) = v.z;
+        }
+
+        // Obtenir une ligne comme Vec3d
+        Vec3d row(int r) const {
+            return { (*this)(r, 0), (*this)(r, 1), (*this)(r, 2) };
+        }
+
+        // Modifier une ligne à partir d'un Vec3d
+        void setRow(int r, const Vec3d& v) {
+            (*this)(r, 0) = v.x;
+            (*this)(r, 1) = v.y;
+            (*this)(r, 2) = v.z;
+        }
+
+        double norm() const {
+            double sum = 0.0;
+            for(int i = 0; i < 3; ++i)
+                for(int j = 0; j < 3; ++j)
+                    sum += (*this)(i,j) * (*this)(i,j);
+            return std::sqrt(sum);
+        }
     
         // Multiplication Mat3d × Vec3d 
         Vec3d operator*(const Vec3d& v) const { 
@@ -71,7 +111,8 @@ namespace NkMath {
 
         // Pour upload float GPU (convertir en float): 
         void ToFloat(float out[9]) const { 
-            for(int i=0; i<9; i++) out[i] = (float)data[i]; 
+            for(int i=0; i<9; i++) 
+                out[i] = (float)data[i]; 
         } 
         
         // Matrice de rotation — formule de Rodrigues 
